@@ -24,7 +24,7 @@ From: ubuntu:24.04
     apt -y install git curl python3 bash wget openjdk-11-jre
     curl -LsSf https://astral.sh/uv/install.sh | sh
     cd /
-    git clone https://github.com/clairelaudy/biocypher.git --branch biopathnet_back-end 
+    git clone https://github.com/clairelaudy/biocypher.git --branch biopathnet-write 
     
 
     mkdir -p /output/
@@ -61,6 +61,7 @@ From: ubuntu:24.04
     ls /ValidationGraphGeneration/src/generation/generate_full_data.py
     ls /ValidationGraphGeneration/bin/../src/generation/generate_full_data.py
     ls /ValidationGraphGeneration/input/simplest/ontology.ttl
+    ls /output/
 
 %labels
     Author Claire Laudy
