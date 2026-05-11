@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 # /// script
 # dependencies = [
 #    "pooch<2.0.0,>=1.7.0",

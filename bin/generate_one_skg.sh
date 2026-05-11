@@ -48,6 +48,42 @@ import_file=$(uv run ontoweave "output/$PATH_TO_EXPE/reasoned_$TYPE_OF_GRAPH.ttl
 echo "show output of ontoweave: "
 out=$(dirname $import_file)
 
+if [ "$TYPE_OF_GRAPH" == "test" ]; then
+  echo "** Build the ground truth explanations for $TYPE_OF_GRAPH data" 1>&2
+  neo4j_import_file=$(uv run ontoweave "output/$PATH_TO_EXPE/reasoned_$TYPE_OF_GRAPH.ttl":automap -s "$BIN_DIR/../input/$NAME_OF_SCENARIO/schema_config.yaml" -C "input/$NAME_OF_SCENARIO/biocypher_neo4j_config.yaml" --debug)
+  echo "show output of ontoweave: "
+  neo4j=$(dirname $neo4j_import_file)
+  
+  if [[ "$OS" == "Linux" ]] ; then
+      # When using Neo4j installed on system (like Ubuntu's packaged version),
+      # the current directory must be writable by user "neo4j",
+      # and all parent directories must be executable by "other".
+      # Every interaction with the database must be done by user "neo4j",
+      # and the import will try to write reports in the current directory.
+      NEO_USER="sudo -u neo4j"
+      # export JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64"
+  else
+      NEO_USER=""
+  fi
+#  ${NEO_USER} neo4j-admin server status
+
+  echo "Stop Neo4j server..." >&2
+  neo_version=$(neo4j-admin --version | cut -d. -f 1)
+  if [[ "$neo_version" -eq 4 ]]; then
+      server="${NEO_USER} neo4j"
+  else
+      server="${NEO_USER} neo4j-admin server"
+  fi
+  $server stop
+
+  chmod u+x $neo4j_import_file
+  $neo4j_import_file
+
+  $server start
+
+  $BIN_DIR/../src/generation/generate_explanations_GT.py $RELATION_TO_LEARN "output/$PATH_TO_EXPE/explanations_${TYPE_OF_GRAPH}.txt"
+fi
+
 echo "** Cleaning skg and brg files" 1>&2
 $BIN_DIR/../src/generation/graph_cleaning.py "$out/skg.txt" "$out/skg_clean.txt"
 $BIN_DIR/../src/generation/graph_cleaning.py "$out/brg.txt" "$out/brg_clean.txt"
