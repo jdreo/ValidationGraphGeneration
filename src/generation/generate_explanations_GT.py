@@ -14,27 +14,20 @@ import argparse
 
 logging.getLogger().setLevel(logging.DEBUG)
 
-if 'ONCODASH_NEO4J_HOST' in os.environ:
-    neo4j_host = os.environ['ONCODASH_NEO4J_HOST']
-else:
-    neo4j_host = "neo4j://localhost:7687"
-
+neo4j_host = "neo4j://localhost:7687"
 config = {
     "neo4j": {
         "uri": neo4j_host,
         "user": "neo4j",
-        "base": "oncodash",
+        # "base": "explanations_GT",
     }
 }
 
-if os.path.isfile("oncodash_neo4j.toml"):
-    config.update(toml.load("oncodash_neo4j.toml"))
-    logging.info(config)
 
 #with open("neo4j.pass") as fd:
 #    config["neo4j"]["passwd"] = fd.readline().strip()y
-config["neo4j"]["passwd"] = "neo4j"
-config["neo4j"]["auth"] = (config["neo4j"]["user"], config["neo4j"]["passwd"])
+# config["neo4j"]["passwd"] = "neo4j"
+# config["neo4j"]["auth"] = (config["neo4j"]["user"], config["neo4j"]["passwd"])
 
 
 find_couples_query = "MATCH (p1:Person)-[siblingOf]->(p2:Person)" \
@@ -49,7 +42,9 @@ queries = {
 def query(link, output_file):
     
     """execute the query for explanations and construct the list of conceptual graph"""
-    with neo4j.GraphDatabase.driver(config["neo4j"]["uri"], auth=config["neo4j"]["auth"]) as db:
+#    with neo4j.GraphDatabase.driver(config["neo4j"]["uri"]) as db:
+#    with neo4j.GraphDatabase.driver(config["neo4j"]["uri"], auth=config["neo4j"]["auth"]) as db:
+    with neo4j.GraphDatabase.driver(config["neo4j"]["uri"], encrypted=True, trust='TRUST_SYSTEM_CA_SIGNED_CERTIFICATES') as db:
         db.verify_connectivity()
         logging.debug(f"{find_couples_query}")
         couples, _, _ = db.execute_query(
