@@ -2,7 +2,7 @@
 # /// script
 # dependencies = [
 #    "jsonargparse<5.0,>=4.39",
-#    "neo4j_utils",
+#    "neo4j>=5.8.0",
 # ]
 # ///
 
@@ -21,7 +21,7 @@ config = {
     "neo4j": {
         "uri": neo4j_host,
         "user": "neo4j",
-        # "base": "explanations_GT",
+        "database": "neo4j",
     }
 }
 
@@ -45,7 +45,7 @@ def query(link, output_file):
     """execute the query for explanations and construct the list of conceptual graph"""
 
     watch("neo4j", out=sys.stdout)
-    
+
     with neo4j.GraphDatabase.driver(config["neo4j"]["uri"]) as db:
 #    with neo4j.GraphDatabase.driver(config["neo4j"]["uri"], auth=config["neo4j"]["auth"]) as db:
 #    with neo4j.GraphDatabase.driver(config["neo4j"]["uri"], encrypted=True, trust='TRUST_SYSTEM_CA_SIGNED_CERTIFICATES') as db:
@@ -56,10 +56,10 @@ def query(link, output_file):
             name=config["neo4j"]["user"], database_ = config["neo4j"]["database"])
 
         explanations = {}
-        app.logging.debug(f"│ {len(couples)} couples of nodes")
+        logging.debug(f"│ {len(couples)} couples of nodes")
         for c in couples:
-            p1 = c["p1"]
-            p2 = c["p2"]
+            p1 = c["p1"]["id"]
+            p2 = c["p2"]["id"]
             query = queries[link].replace("{{p1}}", p1).replace("{{p2}}", p2)
             records, _, _ = db.execute_query(
                 query,
@@ -71,7 +71,7 @@ def query(link, output_file):
 
         with open(output_file, 'w') as out:
             print(explanations, file=out)
-        
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -80,4 +80,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     query(args.link_to_predict, args.output)
-    
+
