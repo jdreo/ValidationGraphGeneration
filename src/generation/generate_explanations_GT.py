@@ -7,10 +7,12 @@
 # ///
 
 import os
+import sys
 import toml
 import neo4j
 import logging
 import argparse
+from neo4j.debug import watch
 
 logging.getLogger().setLevel(logging.DEBUG)
 
@@ -40,11 +42,13 @@ queries = {
 
 
 def query(link, output_file):
-    
     """execute the query for explanations and construct the list of conceptual graph"""
-#    with neo4j.GraphDatabase.driver(config["neo4j"]["uri"]) as db:
+
+    watch("neo4j", out=sys.stdout)
+    
+    with neo4j.GraphDatabase.driver(config["neo4j"]["uri"]) as db:
 #    with neo4j.GraphDatabase.driver(config["neo4j"]["uri"], auth=config["neo4j"]["auth"]) as db:
-    with neo4j.GraphDatabase.driver(config["neo4j"]["uri"], encrypted=True, trust='TRUST_SYSTEM_CA_SIGNED_CERTIFICATES') as db:
+#    with neo4j.GraphDatabase.driver(config["neo4j"]["uri"], encrypted=True, trust='TRUST_SYSTEM_CA_SIGNED_CERTIFICATES') as db:
         db.verify_connectivity()
         logging.debug(f"{find_couples_query}")
         couples, _, _ = db.execute_query(
