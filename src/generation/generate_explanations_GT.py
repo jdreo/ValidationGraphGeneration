@@ -8,7 +8,8 @@
 
 import os
 import sys
-import toml
+import time
+# import toml
 import neo4j
 import logging
 import argparse
@@ -32,46 +33,104 @@ config = {
 # config["neo4j"]["auth"] = (config["neo4j"]["user"], config["neo4j"]["passwd"])
 
 
-find_couples_query = "MATCH (p1:Person)-[siblingOf]->(p2:Person)" \
+find_couples_query = "MATCH (p1:Person)-[SiblingOf]->(p2:Person)" \
                     "RETURN p1,p2"
 queries = {
-    "siblingOf": "MATCH (parent:Person)-[parentOf]->({{p1}}:Person) AND (parent:Person)-[parentOf]->({{p2}}:Person)" \
-                 "RETRUN parent, {{p1}}, {{p2}}"
+    "siblingOf": "MATCH (p2:Person)<-[:ParentOf]-(parent:Person)-[:ParentOf]->(p1:Person) " \
+                 "WHERE (p1:Person)-[:SiblingOf]->(p2:Person) " \
+                 "AND p1<>p2 " \
+                 "RETURN DISTINCT p1, p2, parent",
 }
 
+explanations_template = {
+    # "siblingOf": "(parent:Person)-[parentOf]->({{p1}}:Person) AND ({{parent}}:Person)-[parentOf]->({{p2}}:Person)", 
+    "siblingOf": {
+        "concepts": {
+            "{p1_id}": {
+                "ctype": "Person",
+                "weigth": None,
+            },
+            "{p2_id}": {
+                "ctype": "Person",
+                "weigth": None,
+            },
+            "{parent_id}": {
+                "ctype": "Person",
+                "weigth": None,
+            },
+        },
+        "relations": {
+            "r1": {
+                "rtype": "parentOf",
+                "args": ["{parent_id}", "{p1_id}"],
+                "weigth": None,
+            },
+            "r2": {
+                "rtype": "parentOf",
+                "args": ["{parent_id}", "{p2_id}"],
+                "weigth": None,
+            },
+        },
+    },
+}
+
+
+def instantiate_dict(input_dict, variables):
+    result = {}
+    for key, value in input_dict.items():
+        key = key.format(**variables)
+        if isinstance(value, dict):
+            result[key] = instantiate_dict(value, variables)
+        elif isinstance(value, str):
+            result[key] = value.format(**variables)
+        elif isinstance(value, list):
+            result[key] = []
+            for i, val in enumerate(value):
+                result[key].append(val.format(**variables))
+        else:
+            result[key] = None
+    return result
 
 
 def query(link, output_file):
     """execute the query for explanations and construct the list of conceptual graph"""
-
-    watch("neo4j", out=sys.stdout)
-
+#    watch("neo4j", out=sys.stdout)
+    explanations = {}
+    
     with neo4j.GraphDatabase.driver(config["neo4j"]["uri"]) as db:
-#    with neo4j.GraphDatabase.driver(config["neo4j"]["uri"], auth=config["neo4j"]["auth"]) as db:
-#    with neo4j.GraphDatabase.driver(config["neo4j"]["uri"], encrypted=True, trust='TRUST_SYSTEM_CA_SIGNED_CERTIFICATES') as db:
-        db.verify_connectivity()
-        logging.debug(f"{find_couples_query}")
-        couples, _, _ = db.execute_query(
-            find_couples_query,
+        connected = False
+        while not connected:
+            connected = verify_connectivity(db)
+
+        query = queries[link]
+        records, _, keys = db.execute_query(
+            query,
             name=config["neo4j"]["user"], database_ = config["neo4j"]["database"])
 
-        explanations = {}
-        logging.debug(f"│ {len(couples)} couples of nodes")
-        for c in couples:
-            p1 = c["p1"]["id"]
-            p2 = c["p2"]["id"]
-            query = queries[link].replace("{{p1}}", p1).replace("{{p2}}", p2)
-            records, _, _ = db.execute_query(
-                query,
-                name=config["neo4j"]["user"], database_ = config["neo4j"]["database"])
-
-            for r in records:
-                explanation = r["query"].replace("parent", r["parent"])
-                explanations[f"({p1}:Person)-[{link}]->({p2}:Person)"] = explanation
+        for r in records:
+            variables = {}
+            for k in keys:
+                variables[f"{k}_id"] = r[k]["id"]
+            # explanation = instantiate_dict(explanations_template[link], {"parent_id": r["parent"]["id"], "p1_id": r["p1"]["id"], "p2_id": r["p2"]["id"]})
+            explanation = instantiate_dict(explanations_template[link], variables)
+            explanations[f"({r["p1"]["id"]}:Person)-[{link}]->({r["p2"]["id"]}:Person)"] = explanation
 
         with open(output_file, 'w') as out:
             print(explanations, file=out)
+        
 
+def verify_connectivity(db):
+        try:
+            db.verify_connectivity()
+            logging.debug("Connection to DB OK")
+            return True
+        except neo4j.exceptions.ServiceUnavailable:
+            logging.debug("Checking connection to DB")
+            time.sleep(3)
+            return False
+        
+            
+    
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -80,4 +139,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     query(args.link_to_predict, args.output)
-
+    
