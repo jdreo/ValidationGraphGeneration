@@ -9,6 +9,7 @@
 import os
 import sys
 import time
+import pprint
 # import toml
 import neo4j
 import logging
@@ -116,7 +117,7 @@ def query(link, output_file):
             explanations[f"({r["p1"]["id"]}:Person)-[{link}]->({r["p2"]["id"]}:Person)"] = explanation
 
         with open(output_file, 'w') as out:
-            print(explanations, file=out)
+            pprint.pprint(explanations, stream=out)
         
 
 def verify_connectivity(db):
