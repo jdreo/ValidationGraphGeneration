@@ -48,8 +48,8 @@ apptainer cache clean -f
 REV=$(git_rev)
 apptainer build -F generate_BPN_dataset__$REV.sif generate_BPN_dataset.def
 
-mv $ARCHIVE $EXPE/
-mv generate_BPN_dataset__$REV.sif $EXPE/
+mv -n $ARCHIVE $EXPE/
+mv -n generate_BPN_dataset__$REV.sif $EXPE/
 rm -f $EXPE/generate_BPN_dataset.sif
 ln -s $EXPE/generate_BPN_dataset__$REV.sif $EXPE/generate_BPN_dataset.sif
 
