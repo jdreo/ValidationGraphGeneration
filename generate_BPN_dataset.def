@@ -65,7 +65,6 @@ From: ubuntu:24.04
     ls /ValidationGraphGeneration/src/generation/generate_full_data.py
     ls /ValidationGraphGeneration/bin/../src/generation/generate_full_data.py
     ls /ValidationGraphGeneration/input/simplest/ontology.ttl
-    ls /output/
 
 %labels
     Author Claire Laudy

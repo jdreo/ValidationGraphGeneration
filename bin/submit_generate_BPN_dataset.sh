@@ -11,13 +11,13 @@ echo "Output directory: $EXPE" >&2
 cd $EXPE
 
 VGG_BIN="../$(dirname $0)"
+echo $VGG_BIN
 
 declare -A scenario
 scenario['relatives_complex']='siblingOf'
 # scenario['simplest']='childOf'
 # scenario['parent_has_role']='hasRole'
 # scenario['relatives_has_role']='hasRole'
-
 #scenario['dataproperties_has_role']='hasRole'
 #scenario['parent_class']='is_a'
 #scenario['relatives_class']='is_a'
