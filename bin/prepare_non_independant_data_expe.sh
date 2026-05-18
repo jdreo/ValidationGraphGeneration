@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 # /// script
 # dependencies = [
 #    "pooch<2.0.0,>=1.7.0",
@@ -53,29 +53,29 @@ cd $EXPE
 
 #uv sync
 
-#Generate the independant learing, validation and test skgs
+#Generate the independant learning, validation and test skgs
 $BIN_DIR/prepare_expe.sh ${NAME_OF_SCENARIO} ${NUMBER_OF_LEARNING_DATA} ${NUMBER_OF_VALIDATION_DATA} ${NUMBER_OF_TEST_DATA} ${EDGE_TO_LEARN} ${NUMBER_OF_ABLATION}
 
 # Add the lines of graph_validation.txt that contain ${EDGE_TO_PREDICT} in edges_for_validation.txt
 # And the other ones in graph_learning_with_validation_and_test.txt
 # And add all the validation graph to the ground truth graph
-grep "${EDGE_TO_LEARN}" "output/${PATH_TO_EXPE}/graph_validation.txt" >> "output/${PATH_TO_EXPE}/edges_for_validation.txt"
-grep -v "${EDGE_TO_LEARN}" "output/${PATH_TO_EXPE}/graph_validation.txt" > "output/${PATH_TO_EXPE}/graph_learning_dup.txt"
-cat "output/${PATH_TO_EXPE}/graph_learning.txt" >> "output/${PATH_TO_EXPE}/graph_learning_dup.txt" 
-cat "output/${PATH_TO_EXPE}/graph_learning.txt" "output/${PATH_TO_EXPE}/graph_validation.txt" > "output/${PATH_TO_EXPE}/ground_truth_dup.txt"
+# grep "${EDGE_TO_LEARN}" "output/${PATH_TO_EXPE}/graph_validation.txt" >> "output/${PATH_TO_EXPE}/edges_for_validation.txt"
+# grep -v "${EDGE_TO_LEARN}" "output/${PATH_TO_EXPE}/graph_validation.txt" > "output/${PATH_TO_EXPE}/graph_learning_dup.txt"
+# cat "output/${PATH_TO_EXPE}/graph_learning.txt" >> "output/${PATH_TO_EXPE}/graph_learning_dup.txt" 
+# cat "output/${PATH_TO_EXPE}/graph_learning.txt" "output/${PATH_TO_EXPE}/graph_validation.txt" > "output/${PATH_TO_EXPE}/ground_truth_dup.txt"
  
 
 # Add the nodes and edges of the test graph EXCEPT THE EDGES TO BE PREDICTED to the ground truth graph
-cat "output/${PATH_TO_EXPE}/graph_test.txt" >> "output/${PATH_TO_EXPE}/graph_learning_dup.txt"
+# cat "output/${PATH_TO_EXPE}/graph_test.txt" >> "output/${PATH_TO_EXPE}/graph_learning_dup.txt"
 # Add the nodes and edges of the test graph to the ground truth graph
-cat "output/${PATH_TO_EXPE}/graph_test_gt.txt" >> "output/${PATH_TO_EXPE}/ground_truth_dup.txt"
+# cat "output/${PATH_TO_EXPE}/graph_test_gt.txt" >> "output/${PATH_TO_EXPE}/ground_truth_dup.txt"
 
 # And add the edges to be queried in a edges_to_predict.txt file for BioPathNet
-$BIN_DIR/../src/generation/generate_edges_to_predict.py ${EDGE_TO_LEARN} "output/${PATH_TO_EXPE}/graph_test_gt.txt" "output/${PATH_TO_EXPE}/edges_to_predict.txt" 
+# $BIN_DIR/../src/generation/generate_edges_to_predict.py ${EDGE_TO_LEARN} "output/${PATH_TO_EXPE}/graph_test_gt.txt" "output/${PATH_TO_EXPE}/edges_to_predict.txt" 
 
 # Remove duplicates
-sort -u "output/${PATH_TO_EXPE}/ground_truth_dup.txt" > "output/${PATH_TO_EXPE}/ground_truth.txt"
-sort -u "output/${PATH_TO_EXPE}/graph_learning_dup.txt" > "output/${PATH_TO_EXPE}/graph_learning_with_validation_and_test.txt"
-rm "output/${PATH_TO_EXPE}/ground_truth_dup.txt"
-rm "output/${PATH_TO_EXPE}/graph_learning_dup.txt"
+# sort -u "output/${PATH_TO_EXPE}/ground_truth_dup.txt" > "output/${PATH_TO_EXPE}/ground_truth.txt"
+# sort -u "output/${PATH_TO_EXPE}/graph_learning_dup.txt" > "output/${PATH_TO_EXPE}/graph_learning_with_validation_and_test.txt"
+# rm "output/${PATH_TO_EXPE}/ground_truth_dup.txt"
+# rm "output/${PATH_TO_EXPE}/graph_learning_dup.txt"
 

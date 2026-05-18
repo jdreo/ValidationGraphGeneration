@@ -25,6 +25,10 @@ import os
 import sys
 import pandas as pd
 
+import logging
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+
 import random
 from faker import Faker
 from faker.providers import person
@@ -72,7 +76,9 @@ def generate_person(
 		#Does the person has a partner ?
 		if age>15 and accept_partner and random.choice([True, False]):
 			p_last_name = fake.last_name()
-			partner, df_data, incr = generate_person(fake=fake, df_data=df_data, accept_partner=False, age_min=age_min, age_max = age_max, last_name=p_last_name, incr=incr)
+			partner, df_data, incr = generate_person(fake=fake, df_data=df_data, accept_partner=False,
+			                                         age_min=age_min, age_max = age_max,
+			                                         last_name=p_last_name, incr=incr)
 
 		#randomly decide if the individual (aged more than 20) has child
 		if age > 20 and random.choice(range(2)):
@@ -82,9 +88,13 @@ def generate_person(
 			for new_child in range(nb_children):
 				new_child = None
 				if genre == "male" or partner is None:
-					new_child, df_data, incr= generate_person(fake=fake, df_data=df_data, accept_partner=True, age_min=age-60, age_max = age-20, last_name = last_name, incr=incr)
+					new_child, df_data, incr= generate_person(fake=fake, df_data=df_data, accept_partner=True,
+					                                          age_min=age-60, age_max = age-20,
+					                                          last_name = last_name, incr=incr)
 				else:
-					new_child, df_data, incr = generate_person(fake=fake, df_data=df_data, accept_partner=True, age_min=age-60, age_max = age-20, last_name = partner["last_name"], incr=incr)
+					new_child, df_data, incr = generate_person(fake=fake, df_data=df_data, accept_partner=True,
+					                                           age_min=age-60, age_max = age-20,
+					                                           last_name = partner["last_name"], incr=incr)
 				if new_child is not None:
 					children.append(new_child["id"])
 
@@ -119,7 +129,7 @@ if __name__ == "__main__":
 	parser.add_argument("-s", "--seed", type=int, default=0, metavar="INT",
 	    help="Pseudo-random generator seed (0 = epoch, the default).")
 	args = parser.parse_args()
-	print(args, file=sys.stderr)
+	logger.info(f"args = {args}")
 
 	random.seed(args.seed)
 
@@ -127,16 +137,19 @@ if __name__ == "__main__":
 	fake.add_provider(person)
 
 	#Data to be exported
-	df = pd.DataFrame(columns=["first_name", "last_name", "genre", "age", "partner", "children", "pets", "tenant", "owner"])
+	df = pd.DataFrame(columns=["first_name", "last_name", "genre", "age", "partner", "children", "pets",
+	                  "tenant", "owner"])
 
 	p=None
 
-	#create nf male to be fathers individuals
+	# create nb of persons to be first level individuals.
+	# Other individuals (partners, children and grand-children) are created recursively from them.
 	incr = '0'
 	for n in range(int(args.nb_persons)):
-		p, df, incr = generate_person(fake = fake, df_data = df, accept_partner = True, age_min=10, age_max=40, last_name=None, incr=incr)
+		p, df, incr = generate_person(fake = fake, df_data = df, accept_partner = True, age_min=10, age_max=100,
+		                              last_name=None, incr=incr)
 
-	print(df, file=sys.stderr)
+	logger.info(f"Generated dataset = {df}")
 	dir = os.path.dirname(args.output_file_name)
 	if not str(dir)=="" and not os.path.exists(dir):
 		os.makedirs(dir)

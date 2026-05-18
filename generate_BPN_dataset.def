@@ -6,6 +6,8 @@ From: ubuntu:24.04
     cp -r src/generation $APPTAINER_ROOTFS/ValidationGraphGeneration/src/
     cp -r bin   $APPTAINER_ROOTFS/ValidationGraphGeneration/
     cp -r input $APPTAINER_ROOTFS/ValidationGraphGeneration/
+    # mkdir -p $APPTAINER_ROOTFS/biocypher
+    # cp -r ../../biocypher $APPTAINER_ROOTFS/biocypher
 
 %files
     pyproject.toml /ValidationGraphGeneration/
@@ -24,7 +26,8 @@ From: ubuntu:24.04
     apt -y install git curl python3 bash wget openjdk-11-jre
     curl -LsSf https://astral.sh/uv/install.sh | sh
     cd /
-    git clone https://github.com/clairelaudy/biocypher.git --branch biopathnet-write 
+    # git clone /biocypher/.git --branch biopathnet_writer_options 
+    git clone https://github.com/clairelaudy/biocypher.git --branch biopathnet_writer_options 
     
 
     mkdir -p /output/
@@ -53,6 +56,7 @@ From: ubuntu:24.04
 
 %runscript
     cd /output/
+    # uv run /ValidationGraphGeneration/bin/prepare_expe.sh $*
     uv run /ValidationGraphGeneration/bin/prepare_non_independant_data_expe.sh $*
 
 %test

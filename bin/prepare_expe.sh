@@ -50,20 +50,20 @@ BIN_DIR=$(realpath $(dirname $0))
 echo "Generate CSV data for learning skg" 1>&2
 $BIN_DIR/../src/generation/generate_full_data.py ${NUMBER_OF_LEARNING_DATA} "output/${PATH_TO_EXPE}/data_learning.csv"
 echo "Generate learning skg" 1>&2
-$BIN_DIR/generate_one_skg.sh ${NAME_OF_SCENARIO} ${PATH_TO_EXPE} "learning"
+$BIN_DIR/generate_one_skg.sh ${NAME_OF_SCENARIO} ${PATH_TO_EXPE} "learning" ${EDGE_TO_LEARN}
 
 
 #Generate validation data and skg
 echo "Generate CSV data for validation skg" 1>&2
 $BIN_DIR/../src/generation/generate_full_data.py ${NUMBER_OF_VALIDATION_DATA} "output/${PATH_TO_EXPE}/data_validation.csv"
 echo "Generate validation skg" 1>&2
-$BIN_DIR/generate_one_skg.sh ${NAME_OF_SCENARIO} ${PATH_TO_EXPE} "validation"
+$BIN_DIR/generate_one_skg.sh ${NAME_OF_SCENARIO} ${PATH_TO_EXPE} "validation" ${EDGE_TO_LEARN}
 
 #Generate test data and skg
 echo "Generate CSV data for test skg" 1>&2
 $BIN_DIR/../src/generation/generate_full_data.py ${NUMBER_OF_TEST_DATA} "output/${PATH_TO_EXPE}/data_test.csv"
 echo "Generate ground truth for test skg" 1>&2
-$BIN_DIR/generate_one_skg.sh ${NAME_OF_SCENARIO} ${PATH_TO_EXPE} "test"
+$BIN_DIR/generate_one_skg.sh ${NAME_OF_SCENARIO} ${PATH_TO_EXPE} "test" ${EDGE_TO_LEARN}
 mv "output/${PATH_TO_EXPE}/graph_test.txt" "output/${PATH_TO_EXPE}/graph_test_gt.txt"
  
 echo "** Ablation of data in the test skg" 1>&2

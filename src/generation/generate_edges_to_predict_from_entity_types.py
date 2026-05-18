@@ -22,7 +22,7 @@
 # ///
 
 import argparse
-from itertools import combinations  
+from itertools import product  
 
 # Generation of a file containing the edges to predicts, given a test graph file and a type of edge to predict
 # Takes:
@@ -32,32 +32,37 @@ from itertools import combinations
 # Produces:
 #   - a tsv test file for BioPathNet with the edges that should be queried for prediction by BPN.
 
-def generate_all_combinations(relation, initial_file, output_file):
+def generate_all_combinations(source_type, target_type, relation, entity_file, output_file):
     output_lines = []
 
-    nodes = set()
-    with open(initial_file, 'r') as fin:
+    source_nodes = set()
+    target_nodes = set()
+    with open(entity_file, 'r') as fin:
         with open(output_file, 'w') as fout:
             input_lines = fin.readlines()
             for line in input_lines:
-                s, r, t = line.split()
-                nodes.add(s)
-                nodes.add(t)
+                e, t = line.split("\t")
+                if t == source_type:
+                    source_nodes.add(e)
+                elif t == target_type:
+                    target_nodes.add(e)
 
-            comb = list(combinations(list(nodes), 2))
+            comb = product(source_nodes, target_nodes)
 
             for c in comb:
-                (f,s) = c
-                fout.write('\t'.join([f, relation, s]))
+                (s,t) = c
+                fout.write('\t'.join([s, relation, t]))
                 fout.write("\n")
 
 if __name__ == "__main__":
 
     parser= argparse.ArgumentParser()
-    parser.add_argument("relation")
-    parser.add_argument("initial_file")
-    parser.add_argument("output_file")
+    parser.add_argument("--source_type")
+    parser.add_argument("--relation")
+    parser.add_argument("--target_type")
+    parser.add_argument("--entity_file")
+    parser.add_argument("--output_file")
     asked = parser.parse_args()
 
-    if asked.initial_file != "entity_types.txt"
-    generate_all_combinations(asked.relation, asked.initial_file, asked.output_file)
+    generate_all_combinations(asked.source_type, asked.relation,  asked.target_type,
+                              asked.entity_file, asked.output_file)
